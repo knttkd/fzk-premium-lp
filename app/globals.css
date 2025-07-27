@@ -39,6 +39,7 @@ body {
 .title-underline {
   position: relative;
   display: inline-block;
+  padding-bottom: 8px;
 }
 
 .title-underline::after {
@@ -47,8 +48,8 @@ body {
   bottom: -5px;
   left: 50%;
   transform: translateX(-50%);
-  width: 80%;
-  height: 3px;
+  width: 100%;
+  height: 4px;
   background: linear-gradient(90deg, #f9a8d4, #f472b6);
   border-radius: 2px;
 }
