@@ -27,20 +27,36 @@ export default function HomePage() {
       try {
         setLoading(true)
         
-        // LIFF初期化
-        await initializeLiff()
+        // 開発環境でのデバッグモード
+        const isDevelopment = process.env.NODE_ENV === 'development'
+        const isDebugMode = new URLSearchParams(window.location.search).get('debug') === 'true'
         
-        // プロフィール取得
-        const liffProfile = await getLiffProfile()
-        setProfile(liffProfile)
-        
-        // ユーザーのサブスクリプション状態を確認
-        const userData = await checkUserSubscription(liffProfile.userId)
-        setUser(userData)
-        
-        // プラン状態を設定
-        if (userData?.subscription_status === 'plus') {
-          setUserPlan('plus')
+        if (isDevelopment && isDebugMode) {
+          // デバッグモード：ダミーデータを使用
+          console.log('デバッグモード: ダミーデータを使用します')
+          setProfile({
+            userId: 'debug-user-123',
+            displayName: 'テストユーザー',
+            pictureUrl: 'https://via.placeholder.com/150',
+          })
+          setUser(null)
+          setUserPlan('free')
+        } else {
+          // 本番モード：LIFF初期化
+          await initializeLiff()
+          
+          // プロフィール取得
+          const liffProfile = await getLiffProfile()
+          setProfile(liffProfile)
+          
+          // ユーザーのサブスクリプション状態を確認
+          const userData = await checkUserSubscription(liffProfile.userId)
+          setUser(userData)
+          
+          // プラン状態を設定
+          if (userData?.subscription_status === 'plus') {
+            setUserPlan('plus')
+          }
         }
       } catch (err) {
         console.error('初期化エラー:', err)
