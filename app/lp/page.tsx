@@ -51,7 +51,7 @@ export default function NewLPPage() {
         </section>
 
         {/* 解決策・機能紹介セクション */}
-        <section id="features" className="py-12 px-6 bg-white">
+        <section id="features" className="py-12 px-6 bg-gray-50">
           <div className="text-center mb-10">
             <h2 className="text-2xl font-bold title-underline">Plusプランは、ただの上位版じゃない。</h2>
             <p className="mt-8 text-lg font-bold">
@@ -61,65 +61,159 @@ export default function NewLPPage() {
             </p>
           </div>
 
-          <div className="space-y-10">
+          <div className="space-y-6">
             {/* 機能1: 口調・キャラ完コピ */}
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-pink-100 rounded-2xl mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 20a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1"/>
-                  <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
-                  <path d="M19.5 8.5c.3.1.5.3.7.5l.3.4c.1.2.2.4.2.6v1.8c0 .2-.1.4-.2.6l-.3.4c-.2.2-.4.4-.7.5l-1.5.8c-.2.1-.4.2-.6.2h-1.8c-.2 0-.4-.1-.6-.2l-1.5-.8c-.3-.1-.5-.3-.7-.5l-.3-.4c-.1-.2-.2-.4-.2-.6V9.7c0-.2.1-.4.2-.6l.3-.4c.2-.2.4-.4.7-.5l1.5-.8c.2-.1.4-.2.6-.2h1.8c.2 0 .4.1.6.2l1.5.8Z"/>
-                </svg>
+            <div className="bg-white rounded-3xl shadow-md p-6 relative overflow-hidden">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-20 h-20 bg-gradient-to-br from-pink-100 to-pink-50 rounded-full flex items-center justify-center">
+                    <svg className="w-16 h-16" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="50" cy="35" r="18" fill="#FEC0CB"/>
+                      <path d="M50 55 C35 55 25 65 25 80 L75 80 C75 65 65 55 50 55 Z" fill="#6DB3E2"/>
+                      <circle cx="50" cy="35" r="15" fill="#FDDDE6"/>
+                      <path d="M43 32 Q50 38 57 32" fill="none" stroke="#333" strokeWidth="1.5" strokeLinecap="round"/>
+                      <circle cx="44" cy="33" r="1.5" fill="#333"/>
+                      <circle cx="56" cy="33" r="1.5" fill="#333"/>
+                      <path d="M50 25 C50 25 45 20 40 25 C40 25 45 22 50 25" fill="#8B4513"/>
+                      <path d="M50 25 C50 25 55 20 60 25 C60 25 55 22 50 25" fill="#8B4513"/>
+                    </svg>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-1">まるで私のためだけという関係性が入っていたかのように個性溢れる日記に、読者が惹かれるでしょう。付き合いが長いです。</p>
+                  <h3 className="font-bold text-base text-pink-500 mb-2">1. 私だけ、口調＋個性あ〜</h3>
+                  <div className="bg-pink-50 rounded-xl p-3 text-xs text-gray-700">
+                    <p className="font-medium mb-1">あなたのワード向に何か文章が書入りたい、自分のムキセンサリファとポスにフレーワドもセンスよく!</p>
+                    <p className="text-pink-600 font-bold mt-2">▶ 本当にコピペだけで作業完了！</p>
+                  </div>
+                </div>
               </div>
-              <h3 className="font-bold text-lg text-pink-500">【口調・キャラ完コピ】AIがあなたの分身になる</h3>
-              <p className="text-sm mt-2 px-2">
-                プロフィールURLを入れるだけ。<br />
-                あなたの言葉遣い、絵文字のクセ、キャラまで丸暗記！<br />
-                長年のマネージャーみたいに、あなたの魅力を完璧に理解した日記を書きます。
-              </p>
-              <p className="mt-2 font-bold text-sm bg-pink-100 inline-block px-3 py-1 rounded-full">
-                ▶︎ 「自分らしさ」がアピールできる！
-              </p>
             </div>
 
             {/* 機能2: カスタム設定 */}
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-sky-100 rounded-2xl mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M2 14h4"/><path d="M10 8h4"/><path d="M18 16h4"/>
-                </svg>
+            <div className="bg-white rounded-3xl shadow-md p-6 relative overflow-hidden">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-20 h-20 bg-gradient-to-br from-pink-100 to-pink-50 rounded-full flex items-center justify-center">
+                    <svg className="w-16 h-16" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="50" cy="38" r="20" fill="#FEC0CB"/>
+                      <path d="M50 60 C33 60 20 73 20 90 L80 90 C80 73 67 60 50 60 Z" fill="#FFB3D9"/>
+                      <circle cx="50" cy="38" r="17" fill="#FDDDE6"/>
+                      <path d="M42 35 Q50 42 58 35" fill="none" stroke="#333" strokeWidth="1.5" strokeLinecap="round"/>
+                      <circle cx="44" cy="36" r="1.5" fill="#333"/>
+                      <circle cx="56" cy="36" r="1.5" fill="#333"/>
+                      <path d="M35 30 C35 30 42 25 50 28 C58 25 65 30 65 30" fill="none" stroke="#8B4513" strokeWidth="2" strokeLinecap="round"/>
+                      <rect x="35" y="10" width="30" height="8" rx="4" fill="#6DB3E2" opacity="0.3"/>
+                      <rect x="40" y="12" width="20" height="4" rx="2" fill="#6DB3E2"/>
+                    </svg>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-1">私をワークドPCに向から身感覚が盛込もう、自分のワードたぶも入れましょ。長いこ、理知してにできるルールが開運しています。</p>
+                  <h3 className="font-bold text-base text-pink-500 mb-2">2. 好み、30歳や運動部へ</h3>
+                  <div className="bg-pink-50 rounded-xl p-3 text-xs text-gray-700">
+                    <p className="font-medium mb-1">エロ合い、日記の長さ、自分の呼び方…
+ぜーんぶカスタマイズOK!
+あなたのルール通りに、完璧な日記が完成します。</p>
+                    <p className="text-pink-600 font-bold mt-2">▶ 本当にコピペだけで作業完了！</p>
+                  </div>
+                </div>
               </div>
-              <h3 className="font-bold text-lg text-sky-500">【カスタム設定】面倒な手直し、完全撲滅</h3>
-              <p className="text-sm mt-2 px-2">
-                エロ度合い、日記の長さ、自分の呼び方…<br />
-                ぜーんぶカスタマイズOK！<br />
-                あなたのルール通りに、完璧な日記が完成します。
-              </p>
-              <p className="mt-2 font-bold text-sm bg-sky-100 inline-block px-3 py-1 rounded-full">
-                ▶︎ 本当に「コピペだけ」で作業完了！
-              </p>
             </div>
 
             {/* 機能3: 特別搭載AI */}
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-100 rounded-2xl mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M15.042 21.672L13.684 16.6s.435-.58.819-.979a21.46 21.46 0 0 1 4.962-4.962c.398-.383.979-.819.979-.819l5.072 1.358a1 1 0 0 1 .632.972l-1.358 5.072a1 1 0 0 1-.972.632Z"/>
-                  <path d="m5.878 5.878 4.243 4.243"/><path d="M2 22l1.414-1.414"/><path d="M12 12l-2-2"/><path d="M20 4 12 12"/><path d="m15 19-2-2"/><path d="m22 2-1.414 1.414"/>
-                  <path d="M12 12a2 2 0 0 1-2-2V7a2 2 0 1 1 4 0v3a2 2 0 0 1-2 2Z"/>
-                </svg>
+            <div className="bg-white rounded-3xl shadow-md p-6 relative overflow-hidden">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-20 h-20 bg-gradient-to-br from-pink-100 to-pink-50 rounded-full flex items-center justify-center">
+                    <svg className="w-16 h-16" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="50" cy="38" r="20" fill="#FEC0CB"/>
+                      <path d="M50 60 C33 60 20 73 20 90 L80 90 C80 73 67 60 50 60 Z" fill="#E6B8FF"/>
+                      <circle cx="50" cy="38" r="17" fill="#FDDDE6"/>
+                      <circle cx="42" cy="36" r="5" fill="#FFB3D9"/>
+                      <circle cx="58" cy="36" r="5" fill="#FFB3D9"/>
+                      <path d="M42 35 Q50 44 58 35" fill="none" stroke="#333" strokeWidth="1.5" strokeLinecap="round"/>
+                      <circle cx="44" cy="36" r="1.5" fill="#333"/>
+                      <circle cx="56" cy="36" r="1.5" fill="#333"/>
+                      <path d="M35 27 C35 27 42 22 50 25 C58 22 65 27 65 27" fill="none" stroke="#8B4513" strokeWidth="2" strokeLinecap="round"/>
+                      <path d="M48 42 Q50 44 52 42" fill="none" stroke="#FF69B4" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-1">時刻や曜日フェーいかれと見つやすです。ブルータさが、完成イベストスマホモセッションシェ持って重視したタプスメッシュ。</p>
+                  <h3 className="font-bold text-base text-pink-500 mb-2">3. 特別中からわりレば+</h3>
+                  <div className="bg-pink-50 rounded-xl p-3 text-xs text-gray-700">
+                    <p className="font-medium mb-1">環境でお得れの女性に向スエースクリエイティブで、プルーンベリーやつき時かなセリフフォ単語さで男性の心を鷲掴みにする表現を提案します。</p>
+                    <p className="text-pink-600 font-bold mt-2">▶ 日記からの予約率UPでライバルと差をつける！</p>
+                  </div>
+                </div>
               </div>
-              <h3 className="font-bold text-lg text-yellow-500">【特別搭載AI】売上に直結する"神フレーズ"を連発</h3>
-              <p className="text-sm mt-2 px-2">
-                Plusプラン限定の"超天才AI"は言葉の引き出しがケタ違い。<br />
-                読んだ男性が「今すぐ会いたい…！」<br />
-                と感じる、心を鷲掴みにする表現を提案します。
-              </p>
-              <p className="mt-2 font-bold text-sm bg-yellow-100 inline-block px-3 py-1 rounded-full">
-                ▶︎ 日記からの予約率UPでライバルと差をつける！
-              </p>
+            </div>
+
+            {/* 機能4: プロ仕様 */}
+            <div className="bg-white rounded-3xl shadow-md p-6 relative overflow-hidden">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-20 h-20 bg-gradient-to-br from-pink-100 to-pink-50 rounded-full flex items-center justify-center">
+                    <svg className="w-16 h-16" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="50" cy="38" r="20" fill="#FEC0CB"/>
+                      <path d="M50 60 C33 60 20 73 20 90 L80 90 C80 73 67 60 50 60 Z" fill="#FFE4B5"/>
+                      <circle cx="50" cy="38" r="17" fill="#FDDDE6"/>
+                      <path d="M50 28 C50 28 40 23 35 28 L50 35 L65 28 C60 23 50 28 50 28" fill="#FFD700"/>
+                      <path d="M42 35 Q50 41 58 35" fill="none" stroke="#333" strokeWidth="1.5" strokeLinecap="round"/>
+                      <circle cx="44" cy="36" r="1.5" fill="#333"/>
+                      <circle cx="56" cy="36" r="1.5" fill="#333"/>
+                      <circle cx="72" cy="25" r="8" fill="#FFD700" opacity="0.8"/>
+                      <path d="M72 25 L70 23 L72 21 L74 23 Z" fill="white"/>
+                    </svg>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-1">飲み終わると毎日付け潜のになります。デパレットタブタを広がるスト今冒を殊能力すれば、のもしろとテレを今のままですね。</p>
+                  <h3 className="font-bold text-base text-pink-500 mb-2">4. KB台、顔譜/動画色へ</h3>
+                  <div className="bg-pink-50 rounded-xl p-3 text-xs text-gray-700">
+                    <p className="font-medium mb-1">PLまん店けのぬ重天才AI」な言葉の引き出しがケタ違い。
+読んた男性か「今すぐ会いたい…！」</p>
+                    <p className="text-pink-600 font-bold mt-2">▶ 日記からの予約率UPでライバルと差をつける！</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 機能5: 成長型AI */}
+            <div className="bg-white rounded-3xl shadow-md p-6 relative overflow-hidden">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-20 h-20 bg-gradient-to-br from-pink-100 to-pink-50 rounded-full flex items-center justify-center">
+                    <svg className="w-16 h-16" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="50" cy="38" r="20" fill="#FEC0CB"/>
+                      <path d="M50 60 C33 60 20 73 20 90 L80 90 C80 73 67 60 50 60 Z" fill="#B8E6B8"/>
+                      <circle cx="50" cy="38" r="17" fill="#FDDDE6"/>
+                      <path d="M42 35 Q50 42 58 35" fill="none" stroke="#333" strokeWidth="1.5" strokeLinecap="round"/>
+                      <circle cx="44" cy="36" r="1.5" fill="#333"/>
+                      <circle cx="56" cy="36" r="1.5" fill="#333"/>
+                      <path d="M38 28 C38 28 44 24 50 27 C56 24 62 28 62 28" fill="none" stroke="#90EE90" strokeWidth="3" strokeLinecap="round"/>
+                      <path d="M25 60 L30 55 L35 60" stroke="#90EE90" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M65 60 L70 55 L75 60" stroke="#90EE90" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-1">市板上書きめぐりというところあば、各層国系すれ主どのエリメップたと気込にダリクフェタペースセタレクツがしていきます。</p>
+                  <h3 className="font-bold text-base text-pink-500 mb-2">5. 成長方、洞察・情報通へ</h3>
+                  <div className="bg-pink-50 rounded-xl p-3 text-xs text-gray-700">
+                    <p className="font-medium mb-1">3署化冥言けるようになりびまよう。</p>
+                    <p className="text-pink-600 font-bold mt-2">▶ 使えば使うほど成長するAI！</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+
+          <p className="mt-8 text-center text-xs text-gray-500">
+            3層化の情報が入っており全ての文章となります話になリけん。
+          </p>
 
           <p className="mt-12 text-center text-lg font-bold">
             あなたの仕事は、<br />
