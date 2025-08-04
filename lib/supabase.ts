@@ -1,12 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  throw new Error('Supabase環境変数が設定されていません')
-}
+// 環境変数が設定されていない場合はダミーのクライアントを作成
+// （LPページのみの表示用）
+const supabaseUrl = process.env.SUPABASE_URL || 'https://dummy.supabase.co'
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'dummy-key'
 
 export const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  supabaseUrl,
+  supabaseKey,
   {
     auth: {
       persistSession: false,

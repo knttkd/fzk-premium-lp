@@ -1,10 +1,10 @@
 import Stripe from 'stripe'
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Stripe Secret Keyが設定されていません')
-}
+// 環境変数が設定されていない場合はダミーのキーを使用
+// （LPページのみの表示用）
+const stripeKey = process.env.STRIPE_SECRET_KEY || 'sk_test_dummy_key'
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+export const stripe = new Stripe(stripeKey, {
   apiVersion: '2023-10-16',
 })
 
