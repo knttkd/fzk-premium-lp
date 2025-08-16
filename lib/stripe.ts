@@ -12,12 +12,18 @@ export interface CreateCheckoutSessionParams {
   userId: string
   customerEmail?: string
   customerName?: string
+  metadata?: {
+    userId: string
+    displayName: string
+    pictureUrl: string
+  }
 }
 
 export const createCheckoutSession = async ({
   userId,
   customerEmail,
   customerName,
+  metadata,
 }: CreateCheckoutSessionParams) => {
   const priceId = process.env.STRIPE_PRICE_ID
   const productId = process.env.STRIPE_PRODUCT_ID
@@ -42,7 +48,7 @@ export const createCheckoutSession = async ({
       cancel_url: `${baseUrl}?cancelled=true`,
       customer_email: customerEmail,
       client_reference_id: userId, // LINEユーザーIDを保存
-      metadata: {
+      metadata: metadata || {
         userId: userId,
         customerName: customerName || '',
       },

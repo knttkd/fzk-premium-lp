@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createCheckoutSession } from '@/lib/stripe'
-import { upsertUser, createPaymentHistory } from '@/lib/supabase'
 
+/**
+ * n8n中心アーキテクチャに基づく最小限のAPI実装
+ * 役割：Stripeチェックアウトセッションの作成のみ
+ * データ処理（ユーザー作成、決済履歴記録）はn8nが担当
+ */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -14,31 +18,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // ユーザー情報を作成または更新
-    const user = await upsertUser(userId, displayName, pictureUrl)
-
-    // 既にプラスプランの場合はエラー
-    if (user.subscription_status === 'plus') {
-      return NextResponse.json(
-        { error: '既にプラスプランに登録済みです' },
-        { status: 400 }
-      )
-    }
-
     // Stripeチェックアウトセッションを作成
+    // メタデータとclient_reference_idでユーザー情報をn8nに引き継ぐ
     const session = await createCheckoutSession({
       userId,
       customerName: displayName,
+      metadata: {
+        userId,
+        displayName,
+        pictureUrl: pictureUrl || ''
+      }
     })
-
-    // 決済履歴を記録（pending状態）
-    await createPaymentHistory(
-      userId,
-      session.customer as string || '',
-      session.id,
-      980, // 金額
-      'pending'
-    )
 
     return NextResponse.json({ 
       sessionId: session.id,
