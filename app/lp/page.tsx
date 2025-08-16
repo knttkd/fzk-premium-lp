@@ -2,8 +2,51 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 export default function NewLPPage() {
+  const [processing, setProcessing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  const userId = searchParams.get('userId')
+
+  // Stripe決済処理
+  const handleCheckout = async () => {
+    const currentUserId = userId || 'test-user-' + Date.now()
+    
+    if (!currentUserId) {
+      setError('ユーザー情報が取得できません。')
+      return
+    }
+
+    try {
+      setProcessing(true)
+      setError(null)
+
+      // Checkoutセッションを作成
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: currentUserId }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'エラーが発生しました')
+      }
+
+      // Stripeのチェックアウトページにリダイレクト
+      window.location.href = data.url
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'エラーが発生しました')
+      setProcessing(false)
+    }
+  }
   return (
     <div className="min-h-screen relative">
       {/* グリッドパターンを最下層に配置 */}
@@ -208,10 +251,22 @@ export default function NewLPPage() {
             </p>
 
             <div className="relative">
-              <button className="mt-6 inline-block w-full btn-gradient text-white font-bold text-lg py-4 px-12 rounded-full shadow-lg hover:scale-105 transition-transform duration-300" style={{boxShadow: '0 0 20px rgba(236, 72, 153, 0.5), 0 0 40px rgba(236, 72, 153, 0.3), 0 0 60px rgba(236, 72, 153, 0.2)'}}>
-                今すぐ「VIPプラン」を<br />体験する
+              <button 
+                onClick={handleCheckout}
+                disabled={processing}
+                className="mt-6 inline-block w-full btn-gradient text-white font-bold text-lg py-4 px-12 rounded-full shadow-lg hover:scale-105 transition-transform duration-300 disabled:opacity-50 disabled:cursor-not-allowed" 
+                style={{boxShadow: '0 0 20px rgba(236, 72, 153, 0.5), 0 0 40px rgba(236, 72, 153, 0.3), 0 0 60px rgba(236, 72, 153, 0.2)'}}
+              >
+                {processing ? '処理中...' : (
+                  <>
+                    今すぐ「VIPプラン」を<br />体験する
+                  </>
+                )}
               </button>
             </div>
+            {error && (
+              <p className="mt-4 text-red-500 text-sm text-center">{error}</p>
+            )}
             <p className="mt-2 text-xs text-gray-500">いつでも解約OK！</p>
           </div>
         </section>
