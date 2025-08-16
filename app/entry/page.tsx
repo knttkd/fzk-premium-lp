@@ -17,7 +17,7 @@ export default function EntryPage() {
       
       if (!userId) {
         // userIdがない場合は通常のLPページへ
-        router.push('/')
+        router.push('/lp')
         return
       }
 
@@ -36,7 +36,7 @@ export default function EntryPage() {
         const params = new URLSearchParams()
         params.set('userId', userId)
         if (name) params.set('name', name)
-        router.push(`/?${params.toString()}`)
+        router.push(`/lp?${params.toString()}`)
       }
     }
 

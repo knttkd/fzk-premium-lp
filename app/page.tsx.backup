@@ -1,0 +1,197 @@
+'use client'
+
+import Image from 'next/image'
+import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
+
+export default function HomePage() {
+  const searchParams = useSearchParams()
+  const [processing, setProcessing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
+
+  useEffect(() => {
+    // URLパラメータからuserIdを取得
+    const id = searchParams.get('userId')
+    setUserId(id)
+    
+    // 開発環境でテスト用のuserIdを設定
+    if (!id && process.env.NODE_ENV === 'development') {
+      setUserId('test-user-' + Date.now())
+    }
+  }, [searchParams])
+
+  const handleCheckout = async () => {
+    if (!userId) {
+      setError('ユーザー情報が取得できません。LINEアプリから開いてください。')
+      return
+    }
+
+    try {
+      setProcessing(true)
+      setError(null)
+
+      // Checkoutセッションを作成
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'エラーが発生しました')
+      }
+
+      // Stripeのチェックアウトページにリダイレクト
+      window.location.href = data.url
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'エラーが発生しました')
+      setProcessing(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
+      <div className="max-w-md mx-auto px-4 py-8">
+        {/* ヒーローセクション */}
+        <header className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-800 mb-4">
+            AI写メ日記で<br />もっと稼げる毎日に
+          </h1>
+          <p className="text-lg text-gray-600">
+            AIがあなたの魅力を最大限に引き出す<br />
+            プロ級の日記を自動生成
+          </p>
+        </header>
+
+        {/* メインビジュアル */}
+        <div className="relative w-full h-64 mb-12 rounded-2xl overflow-hidden shadow-xl">
+          <Image
+            src="/images/hero-visual.jpg"
+            alt="AI写メ日記"
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
+
+        {/* 特徴セクション */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold text-center mb-8">
+            プラスプランの特徴
+          </h2>
+          <div className="space-y-6">
+            <div className="bg-white p-6 rounded-xl shadow-md">
+              <h3 className="font-bold text-lg mb-2">🤖 あなた専用のAI</h3>
+              <p className="text-gray-600">
+                あなたの文体を学習し、個性を活かした日記を生成
+              </p>
+            </div>
+            <div className="bg-white p-6 rounded-xl shadow-md">
+              <h3 className="font-bold text-lg mb-2">⚡ 時短で収益UP</h3>
+              <p className="text-gray-600">
+                日記作成時間を90%削減、空いた時間で接客に集中
+              </p>
+            </div>
+            <div className="bg-white p-6 rounded-xl shadow-md">
+              <h3 className="font-bold text-lg mb-2">📈 反応率3倍</h3>
+              <p className="text-gray-600">
+                AIが分析した「読まれる日記」で予約率アップ
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* 料金セクション */}
+        <section className="mb-12">
+          <div className="bg-gradient-to-r from-pink-500 to-purple-500 p-8 rounded-2xl text-white text-center">
+            <h2 className="text-2xl font-bold mb-4">
+              今なら特別価格
+            </h2>
+            <div className="text-5xl font-bold mb-2">
+              ¥980
+              <span className="text-xl font-normal">/月</span>
+            </div>
+            <p className="mb-6 text-sm">
+              いつでも解約OK
+            </p>
+            
+            {/* 決済ボタン */}
+            <button
+              onClick={handleCheckout}
+              disabled={processing}
+              className={`w-full bg-white text-gray-800 font-bold py-4 px-8 rounded-full text-lg transition-all ${
+                processing 
+                  ? 'opacity-50 cursor-not-allowed' 
+                  : 'hover:scale-105 hover:shadow-lg'
+              }`}
+            >
+              {processing ? '処理中...' : (
+                <>今すぐ「プラスプラン」を<br />体験する</>
+              )}
+            </button>
+            
+            {error && (
+              <p className="mt-4 text-yellow-200 text-sm">
+                {error}
+              </p>
+            )}
+          </div>
+        </section>
+
+        {/* よくある質問 */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold text-center mb-8">
+            よくある質問
+          </h2>
+          <div className="space-y-4">
+            <details className="bg-white p-4 rounded-lg">
+              <summary className="font-bold cursor-pointer">
+                解約はいつでもできますか？
+              </summary>
+              <p className="mt-2 text-gray-600">
+                はい、いつでも解約可能です。解約後も当月末まではご利用いただけます。
+              </p>
+            </details>
+            <details className="bg-white p-4 rounded-lg">
+              <summary className="font-bold cursor-pointer">
+                AIはどのくらい学習しますか？
+              </summary>
+              <p className="mt-2 text-gray-600">
+                最初の10件の日記で基本的な文体を学習し、使えば使うほど精度が向上します。
+              </p>
+            </details>
+            <details className="bg-white p-4 rounded-lg">
+              <summary className="font-bold cursor-pointer">
+                無料プランとの違いは？
+              </summary>
+              <p className="mt-2 text-gray-600">
+                無料プランは汎用的な日記生成のみ。プラスプランはあなた専用にカスタマイズされたAIが使えます。
+              </p>
+            </details>
+          </div>
+        </section>
+
+        {/* フッター */}
+        <footer className="text-center text-gray-500 text-sm">
+          <Link href="/terms" className="hover:text-gray-700">
+            利用規約
+          </Link>
+          <span className="mx-2">|</span>
+          <Link href="/privacy" className="hover:text-gray-700">
+            プライバシーポリシー
+          </Link>
+          <p className="mt-4">
+            © 2024 AI写メ日記 All Rights Reserved.
+          </p>
+        </footer>
+      </div>
+    </div>
+  )
+}
