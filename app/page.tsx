@@ -1,78 +1,30 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { initializeLiff, getLiffProfile, LiffProfile } from '@/lib/liff'
-import { checkUserSubscription, User } from '@/lib/supabase'
-import { loadStripe } from '@stripe/stripe-js'
-import PlusSettings from '@/components/PlusSettings'
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+import { useEffect, useState } from 'react'
 
 export default function HomePage() {
-  const [isLoading, setIsLoading] = useState(true)
-  const [userPlan, setUserPlan] = useState<'free' | 'plus'>('free')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [profile, setProfile] = useState<LiffProfile | null>(null)
-  const [user, setUser] = useState<User | null>(null)
-  const [processing, setProcessing] = useState(false)
-  const [showLiffError, setShowLiffError] = useState(false)
-
   const searchParams = useSearchParams()
-  const cancelled = searchParams.get('cancelled')
+  const [processing, setProcessing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
-    const init = async () => {
-      try {
-        setLoading(true)
-        
-        // 開発環境でのデバッグモード
-        const isDevelopment = process.env.NODE_ENV === 'development'
-        const isDebugMode = new URLSearchParams(window.location.search).get('debug') === 'true'
-        
-        if (isDevelopment && isDebugMode) {
-          // デバッグモード：ダミーデータを使用
-          console.log('デバッグモード: ダミーデータを使用します')
-          setProfile({
-            userId: 'debug-user-123',
-            displayName: 'テストユーザー',
-            pictureUrl: 'https://via.placeholder.com/150',
-          })
-          setUser(null)
-          setUserPlan('free')
-        } else {
-          // 本番モード：LIFF初期化
-          await initializeLiff()
-          
-          // プロフィール取得
-          const liffProfile = await getLiffProfile()
-          setProfile(liffProfile)
-          
-          // ユーザーのサブスクリプション状態を確認
-          const userData = await checkUserSubscription(liffProfile.userId)
-          setUser(userData)
-          
-          // プラン状態を設定
-          if (userData?.subscription_status === 'plus') {
-            setUserPlan('plus')
-          }
-        }
-      } catch (err) {
-        console.error('初期化エラー:', err)
-        // LIFFエラーは後で表示するため、ここでは設定しない
-        setShowLiffError(true)
-      } finally {
-        setLoading(false)
-      }
+    // URLパラメータからuserIdを取得
+    const id = searchParams.get('userId')
+    setUserId(id)
+    
+    // 開発環境でテスト用のuserIdを設定
+    if (!id && process.env.NODE_ENV === 'development') {
+      setUserId('test-user-' + Date.now())
     }
-
-    init()
-  }, [])
+  }, [searchParams])
 
   const handleCheckout = async () => {
-    if (!profile) {
-      setError('プロフィール情報が取得できません')
+    if (!userId) {
+      setError('ユーザー情報が取得できません。LINEアプリから開いてください。')
       return
     }
 
@@ -86,264 +38,263 @@ export default function HomePage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          userId: profile.userId,
-          displayName: profile.displayName,
-          pictureUrl: profile.pictureUrl,
-        }),
+        body: JSON.stringify({ userId }),
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        throw new Error('決済セッションの作成に失敗しました')
+        throw new Error(data.error || 'エラーが発生しました')
       }
 
-      const { sessionId } = await response.json()
+      // Stripeのチェックアウトページにリダイレクト
+      window.location.href = data.url
 
-      // Stripeの決済ページにリダイレクト
-      const stripe = await stripePromise
-      if (!stripe) {
-        throw new Error('Stripeの初期化に失敗しました')
-      }
-
-      const { error } = await stripe.redirectToCheckout({ sessionId })
-      if (error) {
-        throw error
-      }
     } catch (err) {
-      console.error('決済エラー:', err)
-      setError('決済処理に失敗しました。もう一度お試しください。')
-    } finally {
+      setError(err instanceof Error ? err.message : 'エラーが発生しました')
       setProcessing(false)
     }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="loader"></div>
-      </div>
-    )
-  }
-
-  // Plusプランユーザーは設定画面を表示
-  if (userPlan === 'plus') {
-    return <PlusSettings profile={profile} user={user} />
-  }
-
   return (
-    <div className="max-w-md mx-auto">
-      {/* ファーストビュー */}
-      <header className="relative text-center px-4 py-12 overflow-hidden">
-        {/* 装飾 */}
-        <div className="absolute top-5 left-5 w-3 h-3 bg-sky-300 rounded-full opacity-80 animate-pulse"></div>
-        <div className="absolute top-16 left-12 w-2 h-2 bg-pink-400 rounded-full opacity-80 animate-pulse"></div>
-        <div className="absolute top-8 right-8 w-4 h-4 bg-yellow-300 rounded-full opacity-80 animate-pulse"></div>
-        
-        <div className="relative z-10">
-          <h1 className="text-4xl font-extrabold text-pink-500 text-shadow leading-tight">AI写メ日記</h1>
-          <p className="mt-2 text-lg font-bold text-shadow">毎日がもっと、特別になる。</p>
-          
-          <div className="my-8">
-            <div className="mx-auto w-[300px] h-[300px] rounded-3xl shadow-2xl border-4 border-white transform rotate-3 bg-gradient-to-br from-pink-200 via-pink-300 to-pink-400 flex items-center justify-center">
-              <div className="text-white text-center -rotate-3">
-                <p className="text-4xl font-bold mb-2">My Diary</p>
-                <p className="text-lg">📝 ✨ 💕</p>
-              </div>
-            </div>
-          </div>
-          
-          <p className="text-base font-medium leading-relaxed">
-            今日の出来事を写真と一緒に残すだけ。<br/>
-            AIがあなたにピッタリの<br/>
-            <span className="font-bold text-pink-500">"エモい"日記</span>を提案してくれるよ。
-          </p>
-
-          <a href="#plan" className="mt-8 inline-block btn-gradient text-white font-bold text-lg py-4 px-12 rounded-full shadow-lg hover:scale-105 transition-transform duration-300">
-            Plusプランに登録する
-          </a>
-          <p className="mt-2 text-xs text-gray-500">いつでも解約OK！</p>
-        </div>
-      </header>
-
-      {/* 悩み共感セクション */}
-      <section className="py-12 px-6">
-        <div className="glassmorphism p-6 rounded-3xl shadow-lg text-center">
-          <h2 className="text-xl font-bold mb-4">こんなこと、ない？</h2>
-          <ul className="space-y-3 text-left inline-block">
-            <li className="flex items-center">
-              <span className="mr-2 text-pink-500">✕</span>
-              <span>日記が三日坊主になっちゃう…</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mr-2 text-pink-500">✕</span>
-              <span>SNSに載せるような特別な毎日じゃない</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mr-2 text-pink-500">✕</span>
-              <span>文章を書くのがちょっとニガテ</span>
-            </li>
-          </ul>
-        </div>
-        <div className="text-center mt-6">
-          <p className="text-2xl font-bold text-pink-500 mt-2">そのお悩み、<br/>AI写メ日記がぜんぶ解決！</p>
-        </div>
-      </section>
-
-      {/* 機能紹介セクション */}
-      <section className="py-12 px-6 bg-white">
-        <h2 className="text-2xl font-bold text-center mb-8 title-underline">AI写メ日記でできること</h2>
-        <div className="space-y-8">
-          {/* Point 1 */}
-          <div className="flex items-center space-x-4">
-            <div className="flex-shrink-0 w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center">
-              <span className="text-3xl">📅</span>
-            </div>
-            <div>
-              <h3 className="font-bold text-lg text-pink-500">毎日新しいテーマが届く</h3>
-              <p className="text-sm mt-1">「今日のラッキーカラーは？」「最近ハマってる曲は？」など、毎日違うお題が届くから、書くことに困らない！</p>
-            </div>
-          </div>
-          {/* Point 2 */}
-          <div className="flex items-center space-x-4">
-            <div className="flex-shrink-0 w-16 h-16 bg-sky-100 rounded-2xl flex items-center justify-center">
-              <span className="text-3xl">🤖</span>
-            </div>
-            <div>
-              <h3 className="font-bold text-lg text-sky-500">AIが"エモい"文章を提案</h3>
-              <p className="text-sm mt-1">撮った写真と言葉を少し入れるだけで、AIが感動的な日記やポエム風の文章を自動で作成。自分では思いつかない表現に出会えるかも。</p>
-            </div>
-          </div>
-          {/* Point 3 */}
-          <div className="flex items-center space-x-4">
-            <div className="flex-shrink-0 w-16 h-16 bg-yellow-100 rounded-2xl flex items-center justify-center">
-              <span className="text-3xl">🎁</span>
-            </div>
-            <div>
-              <h3 className="font-bold text-lg text-yellow-500">自分だけの思い出アルバム</h3>
-              <p className="text-sm mt-1">カレンダー機能でいつでも思い出を振り返り。何気ない毎日が、あなただけの宝物でいっぱいになる。</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* お客様の声 */}
-      <section className="py-12 px-6">
-        <h2 className="text-2xl font-bold text-center mb-8 title-underline">みんなの声</h2>
-        <div className="space-y-6">
-          {/* Voice 1 */}
-          <div className="glassmorphism p-5 rounded-2xl shadow-md">
-            <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 rounded-full border-2 border-white bg-red-200 flex items-center justify-center text-red-600 font-bold">
-                A
-              </div>
-              <div>
-                <p className="font-bold">あやか / 22歳</p>
-                <p className="text-sm mt-1">毎日テーマが来るから飽きずに続けられてる！AIが書いてくれる文章が可愛すぎて、毎日の楽しみが増えました♡</p>
-              </div>
-            </div>
-          </div>
-          {/* Voice 2 */}
-          <div className="glassmorphism p-5 rounded-2xl shadow-md">
-            <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 rounded-full border-2 border-white bg-blue-200 flex items-center justify-center text-blue-600 font-bold">
-                M
-              </div>
-              <div>
-                <p className="font-bold">みき / 19歳</p>
-                <p className="text-sm mt-1">自分の撮った写真がオシャレな日記になるのが嬉しい！友達に「最近なんかキラキラしてるね」って言われました（笑）</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* プラン・料金セクション */}
-      <section id="plan" className="py-12 px-4 bg-white">
-        <div className="relative bg-pink-50 border-2 border-pink-200 rounded-3xl p-6 text-center shadow-2xl">
+    <div className="min-h-screen relative">
+      {/* グリッドパターンを最下層に配置 */}
+      <div className="absolute inset-0 grid-pattern" style={{zIndex: -10}}></div>
+      <div className="relative">
+      <div className="max-w-md mx-auto">
+        {/* ファーストビュー */}
+        <header className="relative text-center px-4 py-4 overflow-hidden">
           {/* 装飾 */}
-          <div className="absolute -top-4 -left-3 transform rotate-[-15deg]">
-            <span className="text-3xl">👑</span>
+          <div className="absolute top-5 left-5 w-3 h-3 bg-sky-300 rounded-full opacity-80 animate-pulse"></div>
+          <div className="absolute top-24 left-12 w-2 h-2 bg-pink-400 rounded-full opacity-80 animate-pulse"></div>
+          <div className="absolute top-8 right-8 w-4 h-4 bg-yellow-300 rounded-full opacity-80 animate-pulse"></div>
+          
+          <div className="relative z-10">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-pink-500 text-shadow leading-tight">
+              ただの"AI任せ"から<br />
+              <span className="text-4xl sm:text-5xl">"ジブン専用AI"</span>に<br />
+              しませんか？
+            </h1>
+            <p className="mt-3 text-lg font-bold text-shadow">売れっ子になって、ラクに稼いじゃお。</p>
           </div>
-          <h2 className="text-xl font-bold text-pink-500">Plusプラン</h2>
-          <p className="text-5xl font-extrabold my-4">¥980<span className="text-2xl font-bold">/月</span></p>
-          <p className="text-xs text-gray-500">(税込)</p>
+        </header>
 
-          <ul className="space-y-3 mt-6 text-left inline-block">
-            <li className="flex items-center">
-              <span className="mr-2 text-green-500 text-lg">✓</span>
-              <span>すべての機能が使い放題</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mr-2 text-green-500 text-lg">✓</span>
-              <span>日記の保存数無制限</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mr-2 text-green-500 text-lg">✓</span>
-              <span>広告なしで快適</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mr-2 text-green-500 text-lg">✓</span>
-              <span>限定の可愛いテーマ</span>
-            </li>
-          </ul>
-
-          {/* エラーメッセージ */}
-          {error && (
-            <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3">
-              <p className="text-red-600 text-sm">{error}</p>
+        {/* CTAセクション（上部は直線） */}
+        <section className="py-6 px-4 relative pb-10" style={{backgroundColor: '#ffeaeb'}}>
+          <div className="bg-white p-6 rounded-3xl shadow-lg">
+            <div className="relative -mb-[108px]">
+              <div className="relative w-full max-w-[360px] h-[360px] mx-auto bg-white rounded-xl">
+                {/* グラデーションオーバーレイ */}
+                <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-white/20 to-transparent z-10 pointer-events-none rounded-xl"></div>
+                <Image 
+                  src="/images/cta-main.png" 
+                  alt="AIキャラクター" 
+                  width={360}
+                  height={360}
+                  className="object-contain w-full h-full relative z-0"
+                />
+              </div>
             </div>
-          )}
-
-          {/* LIFFエラーメッセージ */}
-          {showLiffError && !profile && (
-            <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-              <p className="text-yellow-800 text-sm">LINEアプリ内で開いてください</p>
+            <div className="relative z-20">
+              <h2 className="text-3xl font-bold mb-4 text-center mt-10" style={{textShadow: '0 0 8px #ff949e, 0 0 15px #ff949e, 0 0 20px #ff949e, 0 0 30px #ff949e', color: '#fff'}}>
+                専用のAIで<br />もっと稼げる日記へ
+              </h2>
             </div>
-          )}
-
-          {/* キャンセルメッセージ */}
-          {cancelled && (
-            <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-              <p className="text-yellow-800 text-sm">決済がキャンセルされました</p>
+            <p className="text-base mb-6 text-center relative z-30 mt-6">
+              今の便利さを超える、圧倒的な機能が<br />プラスプランにはあります。
+            </p>
+            <div className="text-center relative">
+              <a href="#features" className="inline-block btn-gradient text-white font-bold text-lg py-2 px-10 rounded-full shadow-lg hover:scale-105 transition-transform duration-300" style={{boxShadow: '0 0 20px rgba(236, 72, 153, 0.5), 0 0 40px rgba(236, 72, 153, 0.3), 0 0 60px rgba(236, 72, 153, 0.2)'}}>
+                プラスプランの<br />神機能をチェック
+              </a>
             </div>
-          )}
+          </div>
+        </section>
 
-          <button
-            onClick={handleCheckout}
-            disabled={processing || !!error || !profile}
-            className={`mt-8 inline-block w-full btn-gradient text-white font-bold text-lg py-4 px-12 rounded-full shadow-lg transition-all duration-300 ${
-              processing || !!error || !profile
-                ? 'opacity-50 cursor-not-allowed' 
-                : 'hover:scale-105'
-            }`}
-          >
-            {processing ? (
-              <span className="flex items-center justify-center">
-                <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+        {/* セクションBとCの間の波線 */}
+        <div className="relative">
+          <svg className="w-full h-16 -mb-1" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M0,60 Q150,120 300,60 T600,60 T900,60 T1200,60 L1200,0 L0,0 Z" fill="#ffeaeb"/>
+          </svg>
+        </div>
+
+        {/* 解決策・機能紹介セクション */}
+        <section id="features" className="py-12 px-6 relative -mt-12 pb-16" style={{backgroundColor: '#facfd7', paddingTop: '60px', zIndex: -1}}>
+          <div className="text-center mb-10">
+            <h2 className="text-2xl font-bold title-underline">プラスプランは<br />ただの上位版じゃない</h2>
+            <p className="mt-8 text-lg font-bold">
+              あなただけの<br />
+              <span className="text-pink-500">"売れる日記"</span><br />
+              生成システムです
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            {/* 機能1: 口調・キャラ完コピ */}
+            <div className="rounded-3xl shadow-md p-6 relative overflow-hidden" style={{backgroundColor: '#ffffff'}}>
+              <div className="text-center">
+                <div className="relative inline-block -mb-[26px]">
+                  <div className="w-64 h-64 relative mx-auto overflow-hidden rounded-xl">
+                    {/* グラデーションオーバーレイ */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent z-10 pointer-events-none"></div>
+                    <Image 
+                      src="/images/new-ai-character.png" 
+                      alt="機能アイコン1" 
+                      width={256}
+                      height={256}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                </div>
+                <div className="relative z-20">
+                  <h3 className="font-bold text-base text-pink-500 mb-2">【口調・キャラ完コピ】<br />AIがあなたの分身になる</h3>
+                </div>
+                <div className="bg-pink-50 rounded-xl p-4 text-xs text-gray-700">
+                  <p className="font-medium mb-2">プロフィールURLを入れるだけ。<br />あなたの言葉遣い、絵文字のクセ、キャラまで丸暗記！<br />長年のマネージャーみたいに、あなたの魅力を完璧に理解した日記を書きます。</p>
+                  <p className="text-pink-600 font-bold mt-3">▶ 「自分らしさ」がアピールできる！</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 機能2: カスタム設定 */}
+            <div className="rounded-3xl shadow-md p-6 relative overflow-hidden" style={{backgroundColor: '#ffffff'}}>
+              <div className="text-center">
+                <div className="relative inline-block -mb-[26px]">
+                  <div className="w-64 h-64 relative mx-auto overflow-hidden rounded-xl">
+                    {/* グラデーションオーバーレイ */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent z-10 pointer-events-none"></div>
+                    <Image 
+                      src="/images/feature-icon-2.jpeg" 
+                      alt="機能アイコン2" 
+                      width={256}
+                      height={256}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                </div>
+                <div className="relative z-20">
+                  <h3 className="font-bold text-base text-pink-500 mb-2">【カスタム設定】<br />面倒な手直し、完全撲滅</h3>
+                </div>
+                <div className="bg-pink-50 rounded-xl p-4 text-xs text-gray-700">
+                  <p className="font-medium mb-2">エロ度合い、日記の長さ、自分の呼び方…<br />
+ぜーんぶカスタマイズOK!<br />
+あなたのルール通りに、完璧な日記が完成します。</p>
+                  <p className="text-pink-600 font-bold mt-3">▶ 本当に「コピペだけ」で作業完了！</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 機能3: 特別搭載AI */}
+            <div className="rounded-3xl shadow-md p-6 relative overflow-hidden" style={{backgroundColor: '#ffffff'}}>
+              <div className="text-center">
+                <div className="relative inline-block -mb-[26px]">
+                  <div className="w-64 h-64 relative mx-auto overflow-hidden rounded-xl">
+                    {/* グラデーションオーバーレイ */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent z-10 pointer-events-none"></div>
+                    <Image 
+                      src="/images/feature-icon-3.png" 
+                      alt="機能アイコン3" 
+                      width={256}
+                      height={256}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                </div>
+                <div className="relative z-20">
+                  <h3 className="font-bold text-base text-pink-500 mb-2">【特別搭載AI】<br />売上に直結する"神フレーズ"を連発</h3>
+                </div>
+                <div className="bg-pink-50 rounded-xl p-4 text-xs text-gray-700">
+                  <p className="font-medium mb-2">プラスプラン限定の"超天才AI"は言葉の引き出しがケタ違い。<br />読んだ男性が「今すぐ会いたい…！」<br />と感じる、心を鷲掴みにする表現を提案します。</p>
+                  <p className="text-pink-600 font-bold mt-3">▶ 日記からの予約率UPでライバルと差をつける！</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p className="mt-12 text-center text-lg font-bold">
+            あなたの仕事は、<br />
+            <br className="sm:hidden" />
+            予約の連絡を返すことだけになるかも。
+          </p>
+        </section>
+
+        {/* セクションCの下部の波線 */}
+        <div className="relative" style={{marginTop: '-1px'}}>
+          <svg className="w-full h-16 block" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M0,60 Q150,120 300,60 T600,60 T900,60 T1200,60 L1200,0 L0,0 Z" fill="#facfd7"/>
+          </svg>
+        </div>
+
+        {/* プラン・料金セクション */}
+        <section id="plan" className="py-12 px-4 relative -mt-16" style={{backgroundColor: '#fff5f8', paddingTop: '80px', zIndex: -1}}>
+          <div className="relative bg-white border-2 border-pink-200 rounded-3xl p-6 text-center shadow-2xl">
+            {/* 装飾 */}
+            <div className="absolute -top-4 -left-3 transform rotate-[-15deg]">
+              <span className="text-3xl">💖</span>
+            </div>
+            <h2 className="text-2xl font-bold text-pink-500">自分へ投資、始めちゃお？</h2>
+            
+            <ul className="space-y-3 mt-8 mb-8 text-left inline-block font-medium">
+              <li className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="mr-3 flex-shrink-0">
+                  <path d="M20 6 9 17l-5-5"/>
                 </svg>
-                処理中...
-              </span>
-            ) : (
-              '今すぐ登録して始める'
+                <span><span className="font-bold">神フレーズAI</span>を使える！</span>
+              </li>
+              <li className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="mr-3 flex-shrink-0">
+                  <path d="M20 6 9 17l-5-5"/>
+                </svg>
+                <span>あなた専用に<span className="font-bold">進化するAI</span></span>
+              </li>
+              <li className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="mr-3 flex-shrink-0">
+                  <path d="M20 6 9 17l-5-5"/>
+                </svg>
+                <span><span className="font-bold">エロ売り ⇔ 清楚</span>の調整機能</span>
+              </li>
+            </ul>
+            
+            <p className="text-5xl font-extrabold my-4">
+              ¥980<span className="text-2xl font-bold">/月</span>
+            </p>
+
+            <div className="relative">
+              <button 
+                onClick={handleCheckout}
+                disabled={processing}
+                className="mt-6 inline-block w-full btn-gradient text-white font-bold text-lg py-4 px-12 rounded-full shadow-lg hover:scale-105 transition-transform duration-300 disabled:opacity-50 disabled:cursor-not-allowed" 
+                style={{boxShadow: '0 0 20px rgba(236, 72, 153, 0.5), 0 0 40px rgba(236, 72, 153, 0.3), 0 0 60px rgba(236, 72, 153, 0.2)'}}
+              >
+                {processing ? '処理中...' : (
+                  <>今すぐ「プラスプラン」を<br />体験する</>
+                )}
+              </button>
+            </div>
+            <p className="mt-2 text-xs text-gray-500">いつでも解約OK！</p>
+            {error && (
+              <p className="mt-4 text-red-500 text-sm">{error}</p>
             )}
-          </button>
-          <p className="mt-2 text-xs text-gray-500">アプリストアで決済されます</p>
+          </div>
+        </section>
+        
+        {/* 波状の境界線 */}
+        <div className="relative bg-gray-100">
+          <svg className="w-full h-16 -mb-1" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M0,60 Q150,0 300,60 T600,60 T900,60 T1200,60 L1200,120 L0,120 Z" fill="#f3f4f6"/>
+          </svg>
         </div>
-      </section>
-      
-      {/* フッター */}
-      <footer className="text-center py-8 px-4">
-        <p className="text-2xl font-bold text-pink-500 text-shadow">
-          さあ、あなたも<br/>"特別な毎日"を始めよう！
-        </p>
-        <div className="mt-8 text-xs text-gray-400 space-x-4">
-          <a href="#" className="hover:text-pink-400">利用規約</a>
-          <a href="#" className="hover:text-pink-400">プライバシーポリシー</a>
-        </div>
-        <p className="mt-4 text-xs text-gray-400">&copy; 2024 AI Syame Nikki. All Rights Reserved.</p>
-      </footer>
+        
+        {/* フッター */}
+        <footer className="text-center py-8 px-4 relative bg-gray-100">
+          <div className="mt-8 text-xs text-gray-400 space-x-4">
+            <a href="#" className="hover:text-pink-400">利用規約</a>
+            <a href="#" className="hover:text-pink-400">プライバシーポリシー</a>
+          </div>
+          <p className="mt-4 text-xs text-gray-400">&copy; 2024 AI写メ日記. All Rights Reserved.</p>
+        </footer>
+      </div>
+      </div>
     </div>
   )
 }

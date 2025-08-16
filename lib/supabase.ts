@@ -114,3 +114,44 @@ export const createPaymentHistory = async (
 
   return data
 }
+
+// ユーザーのプランを確認
+export async function getUserPlan(userId: string): Promise<'free' | 'plus' | null> {
+  try {
+    // まずusersテーブルからsubscription_statusを確認
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('subscription_status')
+      .eq('user_id', userId)
+      .single()
+
+    if (userError) {
+      console.error('Error fetching user data:', userError)
+      // エラーの場合はsubscriptionsテーブルも確認
+    } else if (userData?.subscription_status === 'active' || userData?.subscription_status === 'plus') {
+      return 'plus'
+    }
+
+    // subscriptionsテーブルも確認
+    const { data: subData, error: subError } = await supabase
+      .from('subscriptions')
+      .select('plan, status')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .single()
+
+    if (subError) {
+      console.error('Error fetching subscription data:', subError)
+      return 'free' // デフォルトはfreeプラン
+    }
+
+    if (subData && subData.plan === 'plus' && subData.status === 'active') {
+      return 'plus'
+    }
+
+    return 'free'
+  } catch (error) {
+    console.error('Error checking user plan:', error)
+    return 'free' // エラーの場合はfreeプランとして扱う
+  }
+}
