@@ -2,8 +2,8 @@ import { createClient } from '@supabase/supabase-js'
 
 // 環境変数が設定されていない場合はダミーのクライアントを作成
 // （LPページのみの表示用）
-const supabaseUrl = process.env.SUPABASE_URL || 'https://dummy.supabase.co'
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'dummy-key'
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || 'https://dummy.supabase.co'
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'dummy-key'
 
 export const supabase = createClient(
   supabaseUrl,
